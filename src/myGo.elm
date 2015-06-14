@@ -13,13 +13,15 @@ import Html exposing (li, text, ul)
 -----------
 -- Model --
 -----------
-
-
 type Color = Black | White
                    
 type alias Play = { point : (Int, Int)
                   , color : Color
                   }
+                  
+type alias State = { board : List Play
+                   , captures : (Int, Int)
+                   }
 
 -- The initial states contains an array filled with "-1"
 -- If a stone is placed, it's changed to 0 (black) or 1 (white)
@@ -120,4 +122,3 @@ toCoords (x,y) =
 -- Update with the coordinates when clicked
 input : Signal (Int, Int)
 input = sampleOn Mouse.clicks (Signal.map toCoords Mouse.position)
-

@@ -54,6 +54,10 @@ click point state = case partition (hasCoordinates point) state of
 ----------
 -- View --
 ----------
+toColor : Color -> Color.Color
+toColor c = case c of
+    Black -> Color.black
+    White -> Color.white
 
 display : List Play -> Element
 display s = collage 600 600 <| grid ++ drawStones s
@@ -65,26 +69,20 @@ drawStones state = case state of
 
 drawLastStone : Play -> Form
 drawLastStone play =
-    let (x, y) = play.point
-        co =
-          if | play.color == Black -> Color.white
-             | play.color == White  -> Color.black
-        fill = move (p x, p y) <| filled co <| circle 5
+    let fill = move (p play.point) <| filled (toColor (swap play.color)) <| circle 5
     in group [stone play, fill]
 
-p : Int -> Float
-p x = toFloat (-270 + 30 * x)
+p : (Int, Int) -> (Float, Float)
+p point = let q a = toFloat (-270 + 30 * a)
+              (x,y) = point
+          in (q x, q y)
 
 -- Draws a stone 
 stone : Play -> Form
 stone play =
-    let (x, y) = play.point
-        p a = toFloat (-270 + 30*a)
-        co =
-          if | play.color == Black -> Color.black
-             | play.color == White  -> Color.white
-        fill = move (p x, p y) <| filled co <| circle 15
-        border = move (p x, p y) <| outlined (solid Color.black) <| circle 15
+    let 
+        fill = move (p play.point) <| filled (toColor play.color) <| circle 15
+        border = move (p play.point) <| outlined (solid Color.black) <| circle 15
     in group [fill, border]
 
 
@@ -122,3 +120,4 @@ toCoords (x,y) =
 -- Update with the coordinates when clicked
 input : Signal (Int, Int)
 input = sampleOn Mouse.clicks (Signal.map toCoords Mouse.position)
+

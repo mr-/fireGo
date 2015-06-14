@@ -41,14 +41,14 @@ getLastColor state = case state of
   [] -> Black
   x :: xs -> x.color
 
-hasCoordinates : Int -> Int -> Play -> Bool
-hasCoordinates x y play = (x, y) == play.point
+hasCoordinates : (Int, Int) -> Play -> Bool
+hasCoordinates p play = p == play.point
 
 -- Modifies a state adding a stone
 click : (Int, Int) -> List Play -> List Play
-click (x,y) state = case partition (hasCoordinates x y) state of 
-    ([], []) -> [{point = (x,y), color = Black}]
-    ([], _) -> {point = (x,y), color = swap (getLastColor state) } :: state
+click point state = case partition (hasCoordinates point) state of 
+    ([], []) -> [{point = point, color = Black}]
+    ([], _) -> {point = point, color = swap (getLastColor state) } :: state
     (d, rest) -> rest
     
 ----------
@@ -61,8 +61,7 @@ display s = collage 600 600 <| grid ++ drawStones s
 drawStones : List Play -> List Form
 drawStones state = reverse (map stone state)
 
--- Draws a stone at x y (go coordinates, not pixels) with color 0 or 1
---      draw 0 0 1 = draws a white stone at the bottom left corner
+-- Draws a stone 
 stone : Play -> Form
 stone play =
     let (x, y) = play.point

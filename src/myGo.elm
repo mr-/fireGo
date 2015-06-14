@@ -59,7 +59,21 @@ display : List Play -> Element
 display s = collage 600 600 <| grid ++ drawStones s
 
 drawStones : List Play -> List Form
-drawStones state = reverse (map stone state)
+drawStones state = case state of 
+    []      -> [] 
+    x :: xs -> (drawLastStone x) :: map stone xs
+
+drawLastStone : Play -> Form
+drawLastStone play =
+    let (x, y) = play.point
+        co =
+          if | play.color == Black -> Color.white
+             | play.color == White  -> Color.black
+        fill = move (p x, p y) <| filled co <| circle 5
+    in group [stone play, fill]
+
+p : Int -> Float
+p x = toFloat (-270 + 30 * x)
 
 -- Draws a stone 
 stone : Play -> Form

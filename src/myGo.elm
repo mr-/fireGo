@@ -5,8 +5,6 @@ import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import List exposing (map, reverse, partition)
 import Color
-import Array exposing (Array)
-import Array
 import Maybe exposing (withDefault, Maybe (Just, Nothing))
 import Html exposing (li, text, ul)
 
@@ -23,8 +21,6 @@ type alias State = { board : List Play
                    , captures : (Int, Int)
                    }
 
--- The initial states contains an array filled with "-1"
--- If a stone is placed, it's changed to 0 (black) or 1 (white)
 initialState : List Play
 initialState = []
 

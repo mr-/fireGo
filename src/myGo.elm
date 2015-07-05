@@ -1,12 +1,34 @@
+module MyGo where
+
 import Signal exposing (Signal, sampleOn, foldp, (<~))
 import Signal
+import String
 import Mouse
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import List exposing (map, reverse, partition)
 import Color
 import Maybe exposing (withDefault, Maybe (Just, Nothing))
-import Html exposing (li, text, ul)
+import Maybe.Extra exposing (join)
+import Json.Encode as JE
+import Json.Decode as JD exposing ( (:=) )
+
+
+
+-- JSON
+
+encodePoint : (Int, Int) -> String
+encodePoint p = let (x, y) = p
+                    rep = JE.object [ ("x", JE.int x), ("y", JE.int y)]
+                in JE.encode 0 rep
+
+decoder = JD.maybe (JD.object2 (,) ("x" := JD.int) ("y" := JD.int))
+
+decodePoint : String -> Maybe (Int, Int)
+decodePoint s = JD.decodeString decoder s |> Result.toMaybe |> join
+
+mdecodePoint : Maybe String -> Maybe (Int, Int)
+mdecodePoint s = s `Maybe.andThen` (\x -> JD.decodeString decoder x |> Result.toMaybe |> join)
 
 -----------
 -- Model --
@@ -41,6 +63,11 @@ getLastColor state = case state of
 
 hasCoordinates : (Int, Int) -> Play -> Bool
 hasCoordinates p play = p == play.point
+
+unwrapMaybe : Maybe (Int, Int) -> List Play -> List Play
+unwrapMaybe point state = case point of
+    Just p  -> click p state
+    Nothing -> state
 
 -- Modifies a state adding a stone
 click : (Int, Int) -> List Play -> List Play
@@ -102,7 +129,7 @@ grid =
        
        
 main : Signal Element
-main = display <~ (foldp click initialState input)
+main = display <~ (foldp unwrapMaybe initialState (Signal.map (\x -> x `Maybe.andThen` decodePoint) incomingMove))
 
 -------------
 -- Signals --
@@ -118,3 +145,12 @@ toCoords (x,y) =
 -- Update with the coordinates when clicked
 input : Signal (Int, Int)
 input = sampleOn Mouse.clicks (Signal.map toCoords Mouse.position)
+
+
+port moveSink : Signal String
+port moveSink = Signal.map encodePoint input
+
+port debugSink : Signal String
+port debugSink = Signal.map2 (String.append) (Signal.map toString incomingMove) (Signal.map (\x -> mdecodePoint x |> toString) incomingMove)
+
+port incomingMove : Signal (Maybe String)

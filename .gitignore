@@ -1,2 +1,7 @@
 *.un~
 *.swp
+.idea/
+src/elm-stuff/
+src/elm.js
+src/firebase.json
+

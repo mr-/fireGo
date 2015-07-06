@@ -4,19 +4,20 @@ var shanghai = Elm.fullscreen(Elm.MyGo, {
     incomingMove : null
   });
 
-
 var firebaseData = new Firebase('boiling-heat-190.firebaseIO.com');
-firebaseData.on('child_added', function(snapshot) {
+var gameData = firebaseData.child("games/game" + window.location.search.toString());
+
+gameData.on('child_added', function(snapshot) {
     console.log("ON: " + snapshot.val());
     shanghai.ports.incomingMove.send(snapshot.val());
 });
 
-function logger(x) {
-    console.log("Write: " + x);
-    firebaseData.push(x);
-}
-
-shanghai.ports.moveSink.subscribe(logger);
+shanghai.ports.moveSink.subscribe(
+    function (x) {
+        console.log("Write: " + x);
+        gameData.push(x);
+    }
+);
 
 shanghai.ports.debugSink.subscribe(
     function (x) {
